@@ -1,4 +1,5 @@
 import request from 'supertest';
+import type { Express } from 'express';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { RUN, API, uniq, connect, disconnect, get, post, del } from './_helpers.js';
 
@@ -13,9 +14,10 @@ async function superAdminToken(app) {
 }
 
 describe.skipIf(!RUN)('Role-Permissions API (integration)', () => {
-  let app, token;
-  let roleId; // fresh role created for the test
-  let permissionId; // real permission to assign/revoke
+  let app: Express;
+  let token: string;
+  let roleId: string; // fresh role created for the test
+  let permissionId: string; // real permission to assign/revoke
 
   beforeAll(async () => {
     ({ app } = await connect());

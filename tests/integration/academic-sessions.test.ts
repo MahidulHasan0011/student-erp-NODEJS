@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import { RUN, SEED, uniq, connect, disconnect, get, post, patch, del } from './_helpers.js';
 
 describe.skipIf(!RUN)('Academic-Sessions API (integration)', () => {
-  let app, token;
-  let createdId; // session created in this suite — the seeded active session will not be touched
+  let app: Express;
+  let token: string;
+  let createdId: string; // session created in this suite — the seeded active session will not be touched
 
   beforeAll(async () => {
     ({ app, token } = await connect());

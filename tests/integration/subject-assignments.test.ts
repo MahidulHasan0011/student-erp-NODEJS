@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import { RUN, SEED, uniq, connect, disconnect, get, post, patch, del } from './_helpers.js';
 
 // class c2 has sections (seed: c2-A, c2-B), so section_id is required when creating an assignment.
@@ -9,9 +10,11 @@ const SECTION_C2_A = 'e0000000-0000-0000-0000-000000000003';
 // To keep it re-runnable, in beforeAll we create two FRESH subjects — both the create and patch combos
 // get a new subject on every run, so there is no clash with an old soft-deleted row.
 describe.skipIf(!RUN)('Subject-Assignments API (integration)', () => {
-  let app, token;
-  let createdId; // id of the assignment created across the lifecycle
-  let subjectA, subjectB; // fresh subjects for this suite (create + patch)
+  let app: Express;
+  let token: string;
+  let createdId: string; // id of the assignment created across the lifecycle
+  let subjectA: string;
+  let subjectB: string; // fresh subjects for this suite (create + patch)
 
   beforeAll(async () => {
     ({ app, token } = await connect());

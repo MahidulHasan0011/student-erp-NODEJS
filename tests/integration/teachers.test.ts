@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import { RUN, SEED, uniq, connect, disconnect, get, post, patch, del } from './_helpers.js';
 
 describe.skipIf(!RUN)('Teachers API (integration)', () => {
-  let app, token;
-  let createdId; // id of the teacher created across the lifecycle
+  let app: Express;
+  let token: string;
+  let createdId: string; // id of the teacher created across the lifecycle
 
   beforeAll(async () => {
     ({ app, token } = await connect());

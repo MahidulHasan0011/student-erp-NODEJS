@@ -13,11 +13,11 @@ const __dirname = path.dirname(__filename);
 
 // SQL কে statement-এ ভাঙে, কিন্তু dollar-quote ($$...$$), single-quote string,
 // এবং comment-এর ভিতরের ';' কে আলাদা করে না — তাই DO $$ ... $$ block নিরাপদ থাকে
-const splitStatements = (sql) => {
-  const statements = [];
+const splitStatements = (sql: string): string[] => {
+  const statements: string[] = [];
   let current = '';
   let i = 0;
-  let dollarTag = null; // চলমান dollar-quote tag, যেমন "$$" বা "$body$"
+  let dollarTag: string | null = null; // চলমান dollar-quote tag, যেমন "$$" বা "$body$"
   let inSingle = false; // '...' string-এর ভিতরে আছি কি না
   let inLineComment = false; // -- comment
   let inBlockComment = false; // /* */ comment
@@ -107,7 +107,7 @@ const splitStatements = (sql) => {
   return statements;
 };
 
-const runFile = async (client, filename) => {
+const runFile = async (client: Client, filename: string): Promise<void> => {
   const filePath = path.join(__dirname, filename);
   const sql = fs.readFileSync(filePath, 'utf8'); // ← utf8 explicitly
 
@@ -130,7 +130,7 @@ const runFile = async (client, filename) => {
 };
 
 // views/ folder-এর সব .sql file একটা একটা করে রান করে
-const runViewsFolder = async (client) => {
+const runViewsFolder = async (client: Client): Promise<void> => {
   const viewsDir = path.join(__dirname, 'views');
   if (!fs.existsSync(viewsDir)) {
     console.log('views/ folder নেই, skip করা হলো');
@@ -159,7 +159,7 @@ const runViewsFolder = async (client) => {
 };
 
 // migrations/ folder-এর সব .sql file ক্রমানুসারে (নম্বর অনুযায়ী) রান করে
-const runMigrationsFolder = async (client) => {
+const runMigrationsFolder = async (client: Client): Promise<void> => {
   const migrationsDir = path.join(__dirname, 'migrations');
   if (!fs.existsSync(migrationsDir)) {
     console.log('migrations/ folder নেই, skip করা হলো');
@@ -190,7 +190,7 @@ const runMigrationsFolder = async (client) => {
   console.log('migrations done!');
 };
 
-const main = async () => {
+const main = async (): Promise<void> => {
   const arg = process.argv[2]; // "schema" | "seed" | "all"
 
   if (!env.DATABASE_URL) {
@@ -215,12 +215,12 @@ const main = async () => {
     if (arg === 'seed' || arg === 'all') await runFile(client, 'seed.sql');
 
     if (!arg) {
-      console.log('Usage: node db-init.js <schema|migrations|views|seed|all>');
+      console.log('Usage: tsx db-init.ts <schema|migrations|views|seed|all>');
     }
 
     console.log('\nDone!');
   } catch (err) {
-    console.error('Failed:', err.message);
+    console.error('Failed:', err instanceof Error ? err.message : err);
     process.exit(1);
   } finally {
     await client.end();

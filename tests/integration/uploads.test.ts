@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import { RUN, uniq, connect, disconnect, get, post, patch, del } from './_helpers.js';
 
 // pre-signed URL flow — generate-url is signed locally (without network), so it works
 // even when MinIO/S3 is not running. Since confirm requires an S3 HEAD, confirm is not tested here.
 describe.skipIf(!RUN)('Uploads API (integration)', () => {
-  let app, token;
-  let createdId; // upload_id created in the generate-url step
+  let app: Express;
+  let token: string;
+  let createdId: string; // upload_id created in the generate-url step
 
   beforeAll(async () => {
     ({ app, token } = await connect());

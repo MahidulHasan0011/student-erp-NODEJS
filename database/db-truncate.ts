@@ -27,7 +27,7 @@ const TABLES = [
   'fee_structures',
 ];
 
-const main = async () => {
+const main = async (): Promise<void> => {
   if (!env.DATABASE_URL) {
     console.error('DATABASE_URL not found');
     process.exit(1);
@@ -48,7 +48,7 @@ const main = async () => {
     await client.query(`TRUNCATE TABLE ${tableList} RESTART IDENTITY CASCADE`);
     console.log('All tables truncated successfully!\n');
   } catch (err) {
-    console.error('Failed:', err.message);
+    console.error('Failed:', err instanceof Error ? err.message : err);
     process.exit(1);
   } finally {
     await client.end();

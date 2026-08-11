@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import { RUN, SEED, connect, disconnect, get, post } from './_helpers.js';
 
 // CONSERVATIVE: almost all read-only — we don't corrupt shared state.
 // We don't use generate-roll/recalculate (locking the class could break another suite).
 // We only test the unlock endpoint because it is idempotent and restores state.
 describe.skipIf(!RUN)('Ranking API (integration)', () => {
-  let app, token;
+  let app: Express;
+  let token: string;
   const classId = SEED.classes.c1;
   const sessionId = SEED.sessions.active;
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import { RUN, SEED, uniq, connect, disconnect, get, post, patch, del } from './_helpers.js';
 
 // unique constraint: (student_id, academic_session_id) — this is a hard UNIQUE (does not exclude soft-deletes).
@@ -7,9 +8,10 @@ import { RUN, SEED, uniq, connect, disconnect, get, post, patch, del } from './_
 // class c1 has sections (seed: c1-A, c1-B), so section_id is required — we use c1a.
 
 describe.skipIf(!RUN)('Student-Enrollments API (integration)', () => {
-  let app, token;
-  let createdId; // id of the enrollment created across the lifecycle
-  let sessionId; // fresh academic session created for this suite
+  let app: Express;
+  let token: string;
+  let createdId: string; // id of the enrollment created across the lifecycle
+  let sessionId: string; // fresh academic session created for this suite
 
   beforeAll(async () => {
     ({ app, token } = await connect());

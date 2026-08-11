@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import request from 'supertest';
 
 // ── Full flow test that requires DB + Redis ──
@@ -12,9 +13,9 @@ const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'admin@school.com';
 const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'Password@123'; // seed.sql default
 
 describe.skipIf(!RUN)('auth flow (DB + Redis)', () => {
-  let app;
-  let accessToken;
-  let refreshToken;
+  let app: Express;
+  let accessToken: string;
+  let refreshToken: string;
 
   beforeAll(async () => {
     const redis = (await import('../../src/config/redis.js')).default;

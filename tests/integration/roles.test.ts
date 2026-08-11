@@ -1,4 +1,5 @@
 import request from 'supertest';
+import type { Express } from 'express';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { RUN, API, uniq, connect, disconnect, get, post, patch, put, del } from './_helpers.js';
 
@@ -14,8 +15,9 @@ async function superAdminToken(app) {
 }
 
 describe.skipIf(!RUN)('Roles API (integration)', () => {
-  let app, token;
-  let createdId; // id of the role created during the lifecycle
+  let app: Express;
+  let token: string;
+  let createdId: string; // id of the role created during the lifecycle
 
   beforeAll(async () => {
     ({ app } = await connect());

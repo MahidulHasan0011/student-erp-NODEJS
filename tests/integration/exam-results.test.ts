@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import type { Express } from 'express';
 import { RUN, SEED, uniq, connect, disconnect, get, post, patch, del } from './_helpers.js';
 
 describe.skipIf(!RUN)('Exam-Results API (integration)', () => {
-  let app, token;
-  let examId; // fresh exam created for the test (to keep the triple unique)
-  let resultId; // id of the created result
+  let app: Express;
+  let token: string;
+  let examId: string; // fresh exam created for the test (to keep the triple unique)
+  let resultId: string; // id of the created result
 
   beforeAll(async () => {
     ({ app, token } = await connect());

@@ -1,4 +1,5 @@
 import request from 'supertest';
+import type { Express } from 'express';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { RUN, API, connect, disconnect, get, del } from './_helpers.js';
 
@@ -8,7 +9,8 @@ const SUPERADMIN_EMAIL = 'superadmin@school.com';
 const SUPERADMIN_PASSWORD = 'Password@123';
 
 describe.skipIf(!RUN)('Error-Logs API (integration)', () => {
-  let app, token; // superadmin token
+  let app: Express;
+  let token: string; // superadmin token
 
   beforeAll(async () => {
     ({ app } = await connect());

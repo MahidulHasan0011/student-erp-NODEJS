@@ -19,4 +19,10 @@ export const TTL = {
   PERMISSIONS: 60 * 60,
 } as const;
 
+/**
+ * The concrete client type, exported so callers can name it without repeating
+ * node-redis's generics (the integration test helpers hold onto an instance).
+ */
+export type RedisClient = typeof redisClient;
+
 export default redisClient;
