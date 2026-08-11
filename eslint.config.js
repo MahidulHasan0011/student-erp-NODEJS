@@ -40,9 +40,14 @@ export default tseslint.config(
   },
 
   // ── TypeScript ────────────────────────────────────────────────────────────
-  // Non type-aware ("recommended", not "recommendedTypeChecked") on purpose: type-aware
-  // linting needs a full program per lint run — slow, and noisy while half the codebase
-  // is still untyped .js. Revisit in phase 7 once strict mode is on.
+  // "recommended" plus a hand-picked set of type-aware rules, rather than the whole
+  // recommendedTypeChecked preset.
+  //
+  // The full preset was measured against this codebase: 309 errors, of which 292 were
+  // the no-unsafe-* family firing on `any` that comes from Express (req.body) and
+  // supertest (res.body) — not ours to type away. The four rules enabled below are the
+  // ones that found real defects (dropped promises in server.ts, a callback returning a
+  // promise where void was expected) and settle at zero once fixed.
   {
     files: ['**/*.ts'],
     extends: [...tseslint.configs.recommended],
@@ -51,6 +56,11 @@ export default tseslint.config(
       sourceType: 'module',
       globals: {
         ...globals.node,
+      },
+      // turns on type information for the rules below
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: {
@@ -77,6 +87,16 @@ export default tseslint.config(
         'warn',
         { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
       ],
+
+      // ── type-aware rules (need parserOptions.projectService above) ──
+      // a dropped promise means an error nobody ever sees
+      '@typescript-eslint/no-floating-promises': 'error',
+      // an async callback handed to something expecting a void return — same failure mode
+      '@typescript-eslint/no-misused-promises': 'error',
+      // catches `${obj}` silently becoming '[object Object]'
+      '@typescript-eslint/no-base-to-string': 'error',
+      // an `as` that does nothing is usually a leftover from a since-fixed type
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
 
       // ── kept identical to the .js block above ──
       'no-console': 'off',

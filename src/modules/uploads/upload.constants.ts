@@ -91,8 +91,11 @@ export const CATEGORY_POLICY: Record<UploadCategory, FileGroupName[]> = {
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
+// The two helpers below take `string | null | undefined` rather than `unknown`: every
+// call site passes a string, and accepting `unknown` meant String() could silently turn
+// an object into '[object Object]' and then fail the lookup for a confusing reason.
 /** normalized form of an extension (lowercase, no leading dot/whitespace). */
-export const normalizeExt = (ext: unknown): string =>
+export const normalizeExt = (ext: string | null | undefined): string =>
   String(ext || '')
     .trim()
     .toLowerCase()
@@ -109,7 +112,10 @@ export interface ResolvedFileType {
  * validates extension + MIME together and returns which group it belongs to — anti-spoofing.
  * (ext=png but mime=application/zip matches no group → null)
  */
-export const resolveFileType = (extension: unknown, mimeType: unknown): ResolvedFileType | null => {
+export const resolveFileType = (
+  extension: string | null | undefined,
+  mimeType: string | null | undefined,
+): ResolvedFileType | null => {
   const ext = normalizeExt(extension);
   const mime = String(mimeType || '')
     .trim()

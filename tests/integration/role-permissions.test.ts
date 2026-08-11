@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { RUN, API, uniq, connect, disconnect, get, post, del } from './_helpers.js';
 
 // role-permission write-ops need ROLE_UPDATE + role CREATE/DELETE — only SUPER_ADMIN has them.
-async function superAdminToken(app) {
+async function superAdminToken(app: Express) {
   const res = await request(app)
     .post(`${API}/auth/login`)
     .send({ email: 'superadmin@school.com', password: 'Password@123' });
@@ -74,7 +74,10 @@ describe.skipIf(!RUN)('Role-Permissions API (integration)', () => {
   it('GET /role-permissions/role/{roleId} → the assigned permission is visible', async () => {
     const res = await get(app, token, `/role-permissions/role/${roleId}`);
     expect(res.status).toBe(200);
-    const ids = res.body.data.map((rp) => rp.permission_id || rp.permissionId);
+    const ids = res.body.data.map(
+      (rp: { permission_id?: string; permissionId?: string }) =>
+        rp.permission_id || rp.permissionId,
+    );
     expect(ids).toContain(permissionId);
   });
 

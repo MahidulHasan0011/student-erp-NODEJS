@@ -1,4 +1,5 @@
 import { subjectAssignmentService } from './subject-assignment.service.js';
+import { requireUser } from '../../middlewares/auth.middleware.js';
 import { successResponse } from '../../utils/response.js';
 import type { Handler } from '../../types/http.types.js';
 
@@ -12,7 +13,7 @@ export const subjectAssignmentController: SubjectAssignmentController = {
     try {
       const data = await subjectAssignmentService.create({
         ...req.body,
-        assigned_by: req.user.userId, // logged-in admin coming from auth.middleware.js
+        assigned_by: requireUser(req).userId, // logged-in admin coming from auth.middleware.js
       });
       return successResponse(res, {
         message: 'Subject assigned to teacher',

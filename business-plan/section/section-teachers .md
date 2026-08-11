@@ -1,1 +1,0 @@
-Key rules: sections টেবিলে max_capacity column যোগ করতে হবে (এখন নেই)। Section A সবার আগে পূরণ হয়, তারপর B, তারপর C। Section না থাকলে section_id = null রাখা যাবে।

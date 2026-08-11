@@ -1,1 +1,0 @@
-Attendance — দুই টেবিল: student_attendance (class-based, Teacher নেন) এবং attendance_logs (staff check-in/out, GPS সহ)। attendance.engine.js monthly report তৈরি করে।

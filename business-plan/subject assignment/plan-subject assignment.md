@@ -1,1 +1,0 @@
-Key rules: একজন teacher-কে একই class+section+subject-এ দুইবার assign করা যাবে না (unique constraint আছে)। section_id nullable — section না থাকলে null দেওয়া যাবে। প্রতি session-এ নতুন করে assign করতে হবে।

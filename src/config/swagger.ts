@@ -18,7 +18,9 @@ const definition = {
   },
   servers: [{ url: `http://localhost:${env.PORT}/api/v1`, description: 'Local (v1)' }],
   // All endpoints require bearer auth by default; this is overridden and disabled for auth/login.
-  security: [{ bearerAuth: [] }],
+  // the empty array is the OpenAPI "no scopes required" form — annotated because an
+  // untyped [] in an object literal infers any[]
+  security: [{ bearerAuth: [] as string[] }],
   tags: [
     { name: 'Auth', description: 'Login, token refresh, logout, current user' },
     { name: 'Users', description: 'System user management' },

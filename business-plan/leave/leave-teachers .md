@@ -1,1 +1,0 @@
-Leaves — User apply করে → Admin approve/reject → Approved হলে attendance-এ auto-mark।

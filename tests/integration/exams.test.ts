@@ -5,7 +5,7 @@ import { RUN, SEED, uniq, connect, disconnect, get, post, patch, del } from './_
 describe.skipIf(!RUN)('Exams API (integration)', () => {
   let app: Express;
   let token: string;
-  let createdId: string; // id of the exam created during the lifecycle
+  let createdId: string | null; // id of the exam created during the lifecycle
 
   beforeAll(async () => {
     ({ app, token } = await connect());

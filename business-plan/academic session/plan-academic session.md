@@ -1,1 +1,0 @@
-Key rules: একসাথে শুধু একটি session is_active=true থাকবে। নতুন session activate করার আগে পুরোনোটা close করতে হবে। সব enrollment, exam, subject assignment — সবকিছু academic_session_id দিয়ে বাঁধা।

@@ -1,4 +1,5 @@
 import { attendanceService } from './attendance.service.js';
+import { requireUser } from '../../middlewares/auth.middleware.js';
 import { successResponse } from '../../utils/response.js';
 import type { Handler } from '../../types/http.types.js';
 
@@ -62,7 +63,7 @@ export const attendanceController: AttendanceController = {
     try {
       const data = await attendanceService.staffCheckIn({
         // if userId is not provided, check in the logged-in user
-        userId: req.body.userId || req.user.userId,
+        userId: req.body.userId || requireUser(req).userId,
         ...req.body,
         ip_address: req.ip,
       });
@@ -76,7 +77,7 @@ export const attendanceController: AttendanceController = {
   async staffCheckOut(req, res, next) {
     try {
       const data = await attendanceService.staffCheckOut({
-        userId: req.body.userId || req.user.userId,
+        userId: req.body.userId || requireUser(req).userId,
         ...req.body,
       });
       return successResponse(res, { message: 'Checked out', data });

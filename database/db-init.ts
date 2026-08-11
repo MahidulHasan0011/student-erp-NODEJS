@@ -227,4 +227,5 @@ const main = async (): Promise<void> => {
   }
 };
 
-main();
+// main() handles its own errors and exits; void states that nothing awaits it
+void main();

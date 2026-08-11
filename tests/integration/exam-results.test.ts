@@ -6,7 +6,7 @@ describe.skipIf(!RUN)('Exam-Results API (integration)', () => {
   let app: Express;
   let token: string;
   let examId: string; // fresh exam created for the test (to keep the triple unique)
-  let resultId: string; // id of the created result
+  let resultId: string | null; // id of the created result
 
   beforeAll(async () => {
     ({ app, token } = await connect());

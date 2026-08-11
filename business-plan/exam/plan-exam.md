@@ -1,1 +1,0 @@
-Exams — Admin exam তৈরি করেন (4 type), Teacher marks দেন exam_results-এ, তারপর ranking queue trigger হয়, merit list তৈরি হয়, roll assign হয়।

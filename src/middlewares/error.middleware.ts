@@ -55,6 +55,6 @@ export const errorMiddleware: ErrorRequestHandler = (err, req, res, _next) => {
   // Reaching here means an unexpected error (not operational, not a known DB code) → log it to the DB
   // fire-and-forget: we don't hold the response waiting for the log to succeed; the log service swallows its own errors
   console.error('UNHANDLED ERROR:', err);
-  errorLogService.log(err, req);
+  void errorLogService.log(err, req);
   return errorResponse(res, { message: 'Internal server error', statusCode: 500 });
 };

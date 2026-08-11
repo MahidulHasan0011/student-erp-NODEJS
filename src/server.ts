@@ -17,20 +17,27 @@ const server = app.listen(env.PORT, () => {
 });
 
 // Graceful shutdown
+//
+// The `void` markers and the IIFE are not cosmetic: server.close() and process.on()
+// both expect a void-returning callback, so handing them an async function meant the
+// returned promise was dropped on the floor. Same shutdown sequence, but the fact that
+// nothing awaits it is now stated rather than accidental.
 const shutdown = async (signal: string): Promise<void> => {
   console.log(`\n${signal} received — shutting down gracefully...`);
-  server.close(async () => {
-    await pool.end();
-    console.log('DB pool closed. Bye!');
-    process.exit(0);
+  server.close(() => {
+    void (async () => {
+      await pool.end();
+      console.log('DB pool closed. Bye!');
+      process.exit(0);
+    })();
   });
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('SIGINT', () => void shutdown('SIGINT'));
 
 // Unhandled rejections
 process.on('unhandledRejection', (reason: unknown) => {
   console.error('Unhandled Rejection at:', reason);
-  shutdown('UNHANDLED_REJECTION');
+  void shutdown('UNHANDLED_REJECTION');
 });

@@ -1,1 +1,0 @@
-Teachers — users + teachers দুই টেবিলে data থাকে। subject_assignments দিয়ে teacher → class → section → subject → session বাঁধা হয়। Teacher marks entry করে, student attendance নেয়, নিজের check-in/out করে।

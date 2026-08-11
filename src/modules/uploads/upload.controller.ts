@@ -1,4 +1,5 @@
 import type { Request } from 'express';
+import { requireUser } from '../../middlewares/auth.middleware.js';
 import { uploadService } from './upload.service.js';
 import type { AuditContext, UploadActor } from './upload.service.js';
 import { uploadValidation } from './upload.validation.js';
@@ -6,13 +7,17 @@ import { successResponse } from '../../utils/response.js';
 import type { Handler } from '../../types/http.types.js';
 
 // extract actor (who) + ctx (from where) from req — needed for the ownership check and audit in the service
-// req.user is optional in the type (a route can skip authMiddleware); every upload route
-// is behind auth, so the non-null assertions state that rather than adding a runtime check.
-const getActor = (req: Request): UploadActor => ({
-  userId: req.user!.userId,
-  roleId: req.user!.roleId,
-  permissions: req.permissions, // set by rbacMiddleware
-});
+// requireUser rather than req.user!: every upload route is behind authMiddleware, and this
+// turns that from an assertion into a guarantee — a route added without the guard answers
+// 401 instead of crashing on undefined.
+const getActor = (req: Request): UploadActor => {
+  const user = requireUser(req);
+  return {
+    userId: user.userId,
+    roleId: user.roleId,
+    permissions: req.permissions, // set by rbacMiddleware
+  };
+};
 const getCtx = (req: Request): AuditContext => ({
   ip: req.ip,
   userAgent: req.headers['user-agent'],

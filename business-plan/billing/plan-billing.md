@@ -1,1 +1,0 @@
-Billing — Fee structure → invoice → payment → receipt। Overdue হলে alert। (এটি future scope — table এখনো schema-তে নেই, তৈরি করতে হবে।)

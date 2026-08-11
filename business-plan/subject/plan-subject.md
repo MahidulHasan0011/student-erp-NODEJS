@@ -1,1 +1,0 @@
-Key rules: subjects একটি global table — session-specific না। একটি subject যেমন "Mathematics" একবার তৈরি হয়, বিভিন্ন class/session-এ বারবার ব্যবহার করা যায়। code field unique।

@@ -11,6 +11,7 @@ import {
   assertArray,
   GENDERS,
 } from '../../src/utils/validators.js';
+import { AppError } from '../../src/utils/appError.js';
 
 // No external dependencies — pure functions, always runnable.
 describe('validators', () => {
@@ -36,7 +37,10 @@ describe('validators', () => {
       try {
         assertString(undefined, 'name');
       } catch (e) {
-        expect(e.statusCode).toBe(400);
+        // `e` is unknown under useUnknownInCatchVariables — assert what it actually is
+        // rather than casting blindly
+        expect(e).toBeInstanceOf(AppError);
+        expect((e as AppError).statusCode).toBe(400);
       }
     });
   });

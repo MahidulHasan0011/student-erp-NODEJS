@@ -1,4 +1,5 @@
 import { rankingService } from './ranking.service.js';
+import { requireUser } from '../../middlewares/auth.middleware.js';
 import { successResponse } from '../../utils/response.js';
 import type { Handler } from '../../types/http.types.js';
 
@@ -13,7 +14,7 @@ export const rankingController: RankingController = {
     try {
       const data = await rankingService.triggerRankingAndRoll({
         ...req.body,
-        triggeredBy: req.user.userId,
+        triggeredBy: requireUser(req).userId,
       });
       return successResponse(res, {
         message: 'Ranking & roll generation started — this runs in the background',
@@ -30,7 +31,7 @@ export const rankingController: RankingController = {
     try {
       const data = await rankingService.recalculate({
         ...req.body,
-        triggeredBy: req.user.userId,
+        triggeredBy: requireUser(req).userId,
       });
       return successResponse(res, {
         message: 'Ranking unlocked and recalculation started in the background',
@@ -47,7 +48,7 @@ export const rankingController: RankingController = {
     try {
       const data = await rankingService.unlock({
         ...req.body,
-        triggeredBy: req.user.userId,
+        triggeredBy: requireUser(req).userId,
       });
       return successResponse(res, { message: 'Ranking unlocked', data });
     } catch (err) {

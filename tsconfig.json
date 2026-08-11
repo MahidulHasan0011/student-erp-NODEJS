@@ -3,13 +3,13 @@
   // Base config — editor (IntelliSense), `npm run typecheck`, and vitest use this.
   // It never emits; the actual build uses tsconfig.build.json (which extends this).
   //
-  // Migration mode: allowJs=true lets .ts and .js live side by side, so the app
-  // keeps running while files are converted one at a time. When every file under
-  // src/ is .ts, flip allowJs to false (see docs/typescript-migration.md, phase 7).
+  // The JS → TS migration is complete: every file under src/, tests/ and database/
+  // is TypeScript, allowJs is off, and strict is on. A stray .js file added under
+  // those folders is now a build error rather than an untyped hole.
   // ─────────────────────────────────────────────────────────────────────────
   "compilerOptions": {
     // ── Output target ──
-    // Node 24 runtime. ES2022 keeps top-level await (used in src/server.js) native.
+    // Node 24 runtime. ES2022 keeps top-level await (used in src/server.ts) native.
     "target": "ES2022",
     "lib": ["ES2023"],
 
@@ -27,16 +27,30 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
 
-    // ── Migration mode ──
-    "allowJs": true, // .js files still compile/copy through
-    "checkJs": false, // but they are NOT type-checked (would flood the build)
+    // ── No JavaScript ──
+    // Nothing under src/, tests/ or database/ is .js any more, so this stays false;
+    // it is what keeps the codebase from drifting back.
+    "allowJs": false,
 
-    // ── Strictness — ramped up in phase 7, one flag at a time ──
-    "strict": false,
-
-    // Always-on safety that costs nothing today
-    "forceConsistentCasingInFileNames": true,
+    // ── Strictness ──
+    // strict turns on: noImplicitAny, strictNullChecks, strictFunctionTypes,
+    // strictBindCallApply, strictPropertyInitialization, noImplicitThis,
+    // alwaysStrict and useUnknownInCatchVariables.
+    //
+    // Deliberately NOT enabled, having been measured against this codebase:
+    //   noUncheckedIndexedAccess (123 errors) — nearly all are `rows[0]` right after
+    //     an INSERT … RETURNING, or `statements[i]` inside a bounded for-loop. Provably
+    //     safe, unprovable to the compiler; it would buy ~123 `!` assertions and no bugs.
+    //   exactOptionalPropertyTypes (48) — the assert* validators return `T | undefined`
+    //     for optional fields, which is exactly the intent, and this flag rejects passing
+    //     that to `field?: T`. It also fails against node-redis's own RedisClientOptions,
+    //     which is not ours to fix.
+    //   noPropertyAccessFromIndexSignature (126) — purely stylistic (obj['k'] vs obj.k).
+    // Re-measure before turning any of them on; the counts are from a clean tree.
+    "strict": true,
+    "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
 
     // ── swagger-jsdoc reads the @openapi JSDoc blocks out of the route files,
     //    so comments must survive compilation. Do not set this to true. ──

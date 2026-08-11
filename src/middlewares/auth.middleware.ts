@@ -1,8 +1,25 @@
 import jwt from 'jsonwebtoken';
-import type { RequestHandler } from 'express';
+import type { Request, RequestHandler } from 'express';
 import { env } from '../config/env.js';
+import { AppError } from '../utils/appError.js';
 import { errorResponse } from '../utils/response.js';
 import type { AccessTokenPayload } from '../types/auth.types.js';
+
+/**
+ * req.user for a handler that needs it — or a clean 401.
+ *
+ * `user` is optional on Request because a route can skip authMiddleware, so a controller
+ * has to deal with the undefined case somehow. Writing `req.user!` would only *assert*
+ * that the guard is there; this *enforces* it. If a route is ever registered without
+ * authMiddleware, the client gets a 401 through the normal error envelope instead of the
+ * server throwing a TypeError on undefined and answering 500 with a stack trace.
+ *
+ * On a guarded route the check never fires, so it costs one truthiness test.
+ */
+export const requireUser = (req: Request): AccessTokenPayload => {
+  if (!req.user) throw new AppError('Authentication required', 401);
+  return req.user;
+};
 
 export const authMiddleware: RequestHandler = (req, res, next) => {
   const authHeader = req.headers.authorization;

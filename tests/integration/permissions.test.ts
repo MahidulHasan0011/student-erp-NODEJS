@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { RUN, API, uniq, connect, disconnect, get, post, patch, del } from './_helpers.js';
 
 // permissions write-ops (CREATE/UPDATE/DELETE) are not in the ADMIN role — only in SUPER_ADMIN.
-async function superAdminToken(app) {
+async function superAdminToken(app: Express) {
   const res = await request(app)
     .post(`${API}/auth/login`)
     .send({ email: 'superadmin@school.com', password: 'Password@123' });

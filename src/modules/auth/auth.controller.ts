@@ -1,4 +1,5 @@
 import { authService } from './auth.service.js';
+import { requireUser } from '../../middlewares/auth.middleware.js';
 import { successResponse } from '../../utils/response.js';
 import type { Handler } from '../../types/http.types.js';
 
@@ -27,7 +28,7 @@ export const authController: AuthController = {
 
   async logout(req, res, next) {
     try {
-      await authService.logout(req.user.userId);
+      await authService.logout(requireUser(req).userId);
       return successResponse(res, { message: 'Logged out successfully' });
     } catch (err) {
       next(err);
@@ -36,7 +37,7 @@ export const authController: AuthController = {
 
   async me(req, res, next) {
     try {
-      const data = await authService.getMe(req.user.userId);
+      const data = await authService.getMe(requireUser(req).userId);
       return successResponse(res, { message: 'User fetched', data });
     } catch (err) {
       next(err);

@@ -5,7 +5,7 @@ import { RUN, API, uniq, connect, disconnect, get, post, patch, put, del } from 
 
 // roles write-ops (CREATE/UPDATE/DELETE) are not on the ADMIN role — only SUPER_ADMIN has them.
 // So this suite logs in as super-admin.
-async function superAdminToken(app) {
+async function superAdminToken(app: Express) {
   const res = await request(app)
     .post(`${API}/auth/login`)
     .send({ email: 'superadmin@school.com', password: 'Password@123' });

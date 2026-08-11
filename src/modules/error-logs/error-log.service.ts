@@ -17,8 +17,10 @@ interface LoggableError {
   isOperational?: unknown;
 }
 
+// no assertion needed — every property of LoggableError is optional and unknown-typed,
+// so any non-null object already satisfies it
 const asLoggable = (err: unknown): LoggableError =>
-  typeof err === 'object' && err !== null ? (err as LoggableError) : {};
+  typeof err === 'object' && err !== null ? err : {};
 
 const asString = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 

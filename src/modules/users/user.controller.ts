@@ -1,4 +1,5 @@
 import { userService } from './user.service.js';
+import { requireUser } from '../../middlewares/auth.middleware.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
 import type { Handler } from '../../types/http.types.js';
 
@@ -53,7 +54,7 @@ export const userController: UserController = {
 
   async changePassword(req, res, next) {
     try {
-      await userService.changePassword(req.user.userId, req.body);
+      await userService.changePassword(requireUser(req).userId, req.body);
       return successResponse(res, { message: 'Password changed successfully' });
     } catch (err) {
       next(err);
