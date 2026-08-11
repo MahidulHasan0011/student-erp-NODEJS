@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
 import { withTransaction } from '../config/db.js';
-import { sectionService } from '../modules/sections/section.service.js';
+import { sectionService, type SectionWithOccupancy } from '../modules/sections/section.service.js';
 import { rankingLockRepository } from '../modules/ranking-locks/ranking-lock.repository.js';
 import { rankingRepository } from '../modules/ranking/ranking.repository.js';
 import { AppError } from '../utils/appError.js';
@@ -20,12 +20,6 @@ export interface RollAssignment {
   student_id: string;
   roll_number: number;
   section_id: string | null;
-}
-
-/** Shape sectionService.getSectionsForDistribution provides (null capacity = unlimited). */
-interface SectionForDistribution {
-  id: string;
-  available_seats: number | null;
 }
 
 export interface GenerateRollsParams {
@@ -77,15 +71,7 @@ export const rollEngine = {
       if (sectionId) {
         results = await this._assignDirectRoll(client, rankedList, academicSessionId, sectionId);
       } else {
-        // section.service is still .js. It builds each row as `{ ...s, enrolled_count,
-        // available_seats }`, but `s` comes from an untyped repository, so the spread
-        // contributes nothing and TypeScript infers only { enrolled_count, available_seats } —
-        // `id` is lost from the type even though it is always there at runtime (it is a
-        // `sections` row). The double assertion is the cost of that gap and must be deleted
-        // when section.repository/service are converted in phase 4.
-        const sections = (await sectionService.getSectionsForDistribution(
-          classId,
-        )) as unknown as SectionForDistribution[];
+        const sections = await sectionService.getSectionsForDistribution(classId);
         results = !sections.length
           ? await this._assignDirectRoll(client, rankedList, academicSessionId, null)
           : await this._assignWithSectionDistribution(
@@ -152,7 +138,7 @@ export const rollEngine = {
     client: PoolClient,
     rankedList: RankedEntry[],
     academicSessionId: string,
-    sections: SectionForDistribution[],
+    sections: SectionWithOccupancy[],
   ): Promise<RollAssignment[]> {
     const results: RollAssignment[] = [];
     let sectionIdx = 0;
