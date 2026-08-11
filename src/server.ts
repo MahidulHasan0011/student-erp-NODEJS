@@ -17,7 +17,7 @@ const server = app.listen(env.PORT, () => {
 });
 
 // Graceful shutdown
-const shutdown = async (signal) => {
+const shutdown = async (signal: string): Promise<void> => {
   console.log(`\n${signal} received — shutting down gracefully...`);
   server.close(async () => {
     await pool.end();
@@ -30,7 +30,7 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Unhandled rejections
-process.on('unhandledRejection', (reason) => {
+process.on('unhandledRejection', (reason: unknown) => {
   console.error('Unhandled Rejection at:', reason);
   shutdown('UNHANDLED_REJECTION');
 });

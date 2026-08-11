@@ -57,11 +57,13 @@ export interface BuildRankingParams {
 export const rankingEngine = {
   // Merit list of OLD students for a class+session — from the student_merit_list view
   // (database/views/student_merit_list.sql — sums QUIZ+MID+FINAL and ranks with tie-breaking)
+  // Returns RankedStudent, not RankableStudent: the view computes rank_position itself
+  // (database/views/student_merit_list.sql), so every row already carries one.
   async calculateOldStudentMeritList(
     classId: string,
     academicSessionId: string,
-  ): Promise<RankableStudent[]> {
-    const { rows } = await query<RankableStudent>(
+  ): Promise<RankedStudent[]> {
+    const { rows } = await query<RankedStudent>(
       `SELECT * FROM student_merit_list
        WHERE class_id = $1 AND academic_session_id = $2
        ORDER BY rank_position ASC`,
@@ -170,12 +172,15 @@ export const rankingEngine = {
   // when allowWhenLocked = true the lock check is skipped — only the RECALCULATE_RANKING manual
   // flow uses this (step 6), where the admin has already explicitly unlocked and started this flow.
   // The normal auto-trigger never passes this flag as true.
+  // Both branches end up with a rank_position on every row — scenario 1 takes it from the
+  // merit view and the FIFO numbering, scenario 2 re-assigns it in _sortAndRank. Saying so
+  // in the return type is what lets roll.engine consume the list without re-checking.
   async buildCombinedRanking({
     classId,
     academicSessionId,
     admissionTestEnabled,
     allowWhenLocked = false,
-  }: BuildRankingParams): Promise<RankableStudent[]> {
+  }: BuildRankingParams): Promise<RankedStudent[]> {
     if (!allowWhenLocked) {
       const locked = await rankingLockRepository.isLocked(classId, academicSessionId);
       if (locked) {
