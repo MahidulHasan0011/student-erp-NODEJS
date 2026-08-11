@@ -4,3 +4,7 @@ coverage/
 dist/
 package-lock.json
 *.sql
+
+# hand-written Bangla docs — prettier escapes ** as \**, drops the deliberate blank
+# lines and reflows the aligned plain-text tables onto one line
+src/docs/
