@@ -158,8 +158,17 @@ const definition = {
   },
 };
 
-// JSDoc (@openapi) blocks in route files are scanned from here
-export const swaggerSpec = swaggerJSDoc({
-  definition,
-  apis: ['./src/modules/**/*.routes.js', './src/docs/*.js'],
-});
+// JSDoc (@openapi) blocks in route files are scanned from here.
+//
+// The glob has to follow the migration. In development the sources are read directly
+// and a route file may be .js or .ts depending on how far the conversion has got, so
+// both are matched. In production the sources are not shipped — only dist/ is — and
+// tsconfig sets rootDir:src, which makes the built layout flat (dist/modules/…,
+// not dist/src/modules/…). Comments survive the build because tsconfig deliberately
+// leaves removeComments off; without that this spec would come out empty.
+const apis =
+  env.NODE_ENV === 'production'
+    ? ['./dist/modules/**/*.routes.js', './dist/docs/*.js']
+    : ['./src/modules/**/*.routes.{js,ts}', './src/docs/*.{js,ts}'];
+
+export const swaggerSpec = swaggerJSDoc({ definition, apis });
