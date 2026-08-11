@@ -1,0 +1,54 @@
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // Base config — editor (IntelliSense), `npm run typecheck`, and vitest use this.
+  // It never emits; the actual build uses tsconfig.build.json (which extends this).
+  //
+  // Migration mode: allowJs=true lets .ts and .js live side by side, so the app
+  // keeps running while files are converted one at a time. When every file under
+  // src/ is .ts, flip allowJs to false (see docs/typescript-migration.md, phase 7).
+  // ─────────────────────────────────────────────────────────────────────────
+  "compilerOptions": {
+    // ── Output target ──
+    // Node 24 runtime. ES2022 keeps top-level await (used in src/server.js) native.
+    "target": "ES2022",
+    "lib": ["ES2023"],
+
+    // ── Module system ──
+    // NodeNext is required because package.json has "type": "module".
+    // It also means imports keep their `.js` extension inside .ts files —
+    // which this codebase already does everywhere, so no import paths change.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    // Type-only imports must be written `import type { X }` and are erased from
+    // the output. Prevents a type-only import surviving into emitted JS and
+    // crashing at runtime on a missing export.
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // ── Migration mode ──
+    "allowJs": true, // .js files still compile/copy through
+    "checkJs": false, // but they are NOT type-checked (would flood the build)
+
+    // ── Strictness — ramped up in phase 7, one flag at a time ──
+    "strict": false,
+
+    // Always-on safety that costs nothing today
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // ── swagger-jsdoc reads the @openapi JSDoc blocks out of the route files,
+    //    so comments must survive compilation. Do not set this to true. ──
+    "removeComments": false,
+
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": false,
+    "noEmit": true,
+
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "database/**/*", "tests/**/*", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "coverage", "business-plan"]
+}

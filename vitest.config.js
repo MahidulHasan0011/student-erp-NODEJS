@@ -11,7 +11,9 @@ export default defineConfig({
     // describe/it/expect globals — usable without importing
     globals: true,
     environment: 'node',
-    include: ['tests/**/*.test.js'],
+    // {js,ts} during the TypeScript migration — a renamed test file must not be
+    // silently skipped. Narrow to *.test.ts once tests/ is fully converted.
+    include: ['tests/**/*.test.{js,ts}'],
     // importing app tries to connect the db pool; use a fork pool to avoid a hang when the DB is absent
     pool: 'forks',
     // limited concurrency — so it doesn't exceed the Postgres connection limit (often 15 on hosted).
@@ -31,8 +33,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      include: ['src/**/*.js'],
-      exclude: ['src/server.js', 'src/jobs/**', 'src/queues/**'],
+      include: ['src/**/*.{js,ts}'],
+      exclude: ['src/server.{js,ts}', 'src/jobs/**', 'src/queues/**'],
     },
   },
 });

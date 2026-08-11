@@ -1,0 +1,17 @@
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // Production build — `npm run build` → dist/
+  //
+  // Only src/ is compiled. tests/ run through vitest and database/ scripts run
+  // through tsx, so neither needs to ship in the build output.
+  // rootDir=src keeps the output flat: src/server.ts → dist/server.js
+  // ─────────────────────────────────────────────────────────────────────────
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "coverage", "business-plan", "tests", "**/*.test.ts"]
+}
