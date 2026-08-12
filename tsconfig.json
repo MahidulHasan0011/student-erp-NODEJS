@@ -64,5 +64,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*", "database/**/*", "tests/**/*", "vitest.config.ts"],
-  "exclude": ["node_modules", "dist", "coverage", "business-plan"]
+  "exclude": ["node_modules", "dist", "coverage"]
 }

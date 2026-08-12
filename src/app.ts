@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import v1Router from './api/v1/index.js';
+import { env } from './config/env.js';
 import { swaggerSpec } from './config/swagger.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 
@@ -27,7 +28,7 @@ app.use(
 );
 
 //Logging
-if (process.env.NODE_ENV !== 'test') {
+if (env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 

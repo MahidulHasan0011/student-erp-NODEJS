@@ -4,40 +4,15 @@ import tseslint from 'typescript-eslint';
 import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 
-// During the TypeScript migration .js and .ts live side by side, so there are two
-// parallel blocks below with deliberately matching rules — a file must not change
-// behaviour just because it got renamed. Delete the .js block once src/ is fully .ts.
+// The migration is done — src/, tests/ and database/ are all .ts, and the only .js
+// file left in the repo is this config. Add a `**/*.js` block back if a .js/.cjs/.mjs
+// tool config ever shows up; until then js.configs.recommended covers it.
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', 'business-plan/**', 'coverage/**', 'dist/**'],
+    ignores: ['node_modules/**', 'coverage/**', 'dist/**'],
   },
 
   js.configs.recommended,
-
-  // ── JavaScript ────────────────────────────────────────────────────────────
-  {
-    files: ['**/*.js'],
-    languageOptions: {
-      ecmaVersion: 2023,
-      sourceType: 'module',
-      globals: {
-        ...globals.node,
-      },
-    },
-    plugins: {
-      prettier: prettierPlugin,
-    },
-    rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      'no-console': 'off',
-      'no-process-exit': 'off',
-      'prefer-const': 'warn',
-      'no-var': 'error',
-      eqeqeq: ['warn', 'smart'],
-      // Single quotes + all other formatting is enforced by Prettier (.prettierrc.json)
-      'prettier/prettier': 'warn',
-    },
-  },
 
   // ── TypeScript ────────────────────────────────────────────────────────────
   // "recommended" plus a hand-picked set of type-aware rules, rather than the whole
@@ -98,7 +73,8 @@ export default tseslint.config(
       // an `as` that does nothing is usually a leftover from a since-fixed type
       '@typescript-eslint/no-unnecessary-type-assertion': 'error',
 
-      // ── kept identical to the .js block above ──
+      // ── general style, not TS-specific ──
+      // Single quotes + all other formatting is enforced by Prettier (.prettierrc.json)
       'no-console': 'off',
       'no-process-exit': 'off',
       'prefer-const': 'warn',
