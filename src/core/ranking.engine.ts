@@ -66,7 +66,8 @@ export const rankingEngine = {
       [classId, academicSessionId],
     );
     return rows;
-  },
+  },     
+
 
   // ADMISSION exam scores of NEW students — for merging into the merit list in Scenario 2
   async calculateNewStudentAdmissionScores(
