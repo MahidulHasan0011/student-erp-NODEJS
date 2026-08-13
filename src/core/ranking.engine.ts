@@ -5,10 +5,9 @@ import { rankingLockRepository } from '../modules/ranking-locks/ranking-lock.rep
 /**
  * A row that can take part in ranking.
  *
- * Two different queries feed this and their columns do not line up: the
- * student_merit_list view calls the midterm total `midterm_score`, while the ADMISSION
- * query calls it `mid_score`. _sortAndRank reads both, so both are declared optional
- * here rather than forcing one shape onto the other.
+ * The merit view and the admission query use the same logical field name for the
+ * midterm component: `midterm_score`. Keeping a single property name here avoids
+ * mixing two spellings for the same concept and makes the sort logic deterministic.
  *
  * The score columns are `string | number` because Postgres SUM()/numeric arrives as a
  * string — see the `num()` helper below.
@@ -17,9 +16,6 @@ export interface RankableStudent {
   student_id: string;
   total_score?: string | number | null;
   final_score?: string | number | null;
-  /** ADMISSION query spelling */
-  mid_score?: string | number | null;
-  /** student_merit_list view spelling */
   midterm_score?: string | number | null;
   admission_date?: Date | string | null;
   enrollment_created_at?: Date | string | null;
@@ -86,7 +82,7 @@ export const rankingEngine = {
          se.created_at AS enrollment_created_at,
          SUM(er.marks) AS total_score,
          0 AS final_score,
-         0 AS mid_score
+         0 AS midterm_score
        FROM exam_results er
        JOIN exams e ON e.id = er.exam_id
        JOIN students s ON s.id = er.student_id
@@ -111,11 +107,10 @@ export const rankingEngine = {
   // ── deterministic sort — the document's 5-step tie-breaking rule is re-applied here
   // (in Scenario 2, ranks must be re-assigned after merging OLD+NEW, so the sort logic is needed here) ──
   _sortAndRank(students: RankableStudent[]): RankedStudent[] {
-    // Postgres numeric/SUM comes as a string — it must be passed through Number() before comparing,
-    // and the merit-view gives "midterm_score" while admission rows give "mid_score" — handle both
+    // Postgres numeric/SUM comes as a string — it must be passed through Number() before comparing.
     const num = (v: unknown): number => Number(v) || 0;
     const finalOf = (r: RankableStudent): number => num(r.final_score);
-    const midOf = (r: RankableStudent): number => num(r.mid_score ?? r.midterm_score);
+    const midOf = (r: RankableStudent): number => num(r.midterm_score);
 
     const sorted = [...students].sort((a, b) => {
       if (num(b.total_score) !== num(a.total_score)) return num(b.total_score) - num(a.total_score);

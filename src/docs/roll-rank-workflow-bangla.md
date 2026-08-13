@@ -163,7 +163,7 @@ return _sortAndRank(combined)   // merge এর পর নতুন করে ra
 সমান হলে নিচের ক্রমে decide হয়:
 1. `total_score` বেশি — উপরে
 2. `final_score` বেশি — উপরে
-3. `mid_score` বেশি — উপরে
+3. `midterm_score` বেশি — উপরে
 4. `admission_date` আগে — উপরে
 5. `enrollment_created_at` আগে — উপরে
 6. সবশেষে `student_id` (deterministic — সবসময় একই ফল)
