@@ -25,7 +25,7 @@ export const academicSessionService = {
     end_date,
     admission_test_enabled,
   }: CreateAcademicSessionInput): Promise<AcademicSessionRow> {
-    name = assertString(name, 'name', { max: 50 });
+    assertString(name, 'name', { max: 50 });
     assertDate(start_date, 'start_date', { required: false });
     assertDate(end_date, 'end_date', { required: false });
     assertDateOrder(start_date, end_date);
