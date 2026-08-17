@@ -130,21 +130,32 @@ export const sectionRepository = {
 
     if (name !== undefined) {
       params.push(name);
-      setClauses.push(`name = $${params.length}`);
+      //params = ['Section B'] lenght 1
+      setClauses.push(`name = $${params.length}`); //name = $1
+      //setClauses = [ 'name = $1' ]
     }
     if (max_capacity !== undefined) {
       params.push(max_capacity);
-      setClauses.push(`max_capacity = $${params.length}`);
+      //params = ['Section B', 50] length 2
+      setClauses.push(`max_capacity = $${params.length}`); //max_capacity = $2
+      //setClauses = [ 'name = $1', 'max_capacity = $2' ]
     }
     if (!setClauses.length) return null;
 
     params.push(id);
+    //params = ['Section B', 50, 'sec-501'] lenght 3
     const { rows } = await query<SectionRow>(
-      `UPDATE sections SET ${setClauses.join(', ')}, updated_at = NOW()
+      `UPDATE sections 
+       SET ${setClauses.join(', ')}, updated_at = NOW()
        WHERE id = $${params.length} AND deleted_at IS NULL
        RETURNING *`,
       params,
     );
+// ex,
+// UPDATE sections 
+// SET name = $1, max_capacity = $2, updated_at = NOW()
+// WHERE id = $3 AND deleted_at IS NULL
+// RETURNING *
     return rows[0] || null;
   },
 
