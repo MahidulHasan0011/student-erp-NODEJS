@@ -92,7 +92,7 @@ export const sectionService = {
     max_capacity = assertInteger(max_capacity, 'max_capacity', { required: false, min: 1 });
 
     if (name) {
-      const existing = await sectionRepository.findByClassAndName(section.class_id!, name);
+      const existing = await sectionRepository.findByClassAndName(section.class_id!, name);  //section.class_id! ,(!) called Non-Null Assertion Operator. I am 100% certain that the value of `class_id` here will never be `null` or `undefined`. You can trust me blindly—don't throw any Type Errors.
       if (existing && existing.id !== id) {
         throw new AppError(`Section "${name}" already exists in this class`, 409);
       }
