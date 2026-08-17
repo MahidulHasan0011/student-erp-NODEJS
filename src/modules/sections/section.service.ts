@@ -88,7 +88,7 @@ export const sectionService = {
   async update(id: string, { name, max_capacity }: UpdateSectionInput): Promise<SectionRow> {
     const section = await this.getById(id);
 
-    name = assertString(name, 'name', { required: false, max: 20 })?.toUpperCase();
+    assertString(name, 'name', { required: false, max: 20 })?.toUpperCase();
     max_capacity = assertInteger(max_capacity, 'max_capacity', { required: false, min: 1 });
 
     if (name) {
