@@ -47,6 +47,8 @@ export interface UpdateSubjectAssignmentData {
   section_id?: string | null;
   subject_id?: string;
   academic_session_id?: string;
+  /** who last modified this assignment — written on every update so there is a log of changes */
+  assigned_by?: string | null;
 }
 
 const SORTABLE_FIELDS: Record<string, string> = {
@@ -80,6 +82,15 @@ const DETAIL_SELECT = `
   JOIN subjects sub ON sub.id = sa.subject_id
   JOIN academic_sessions asess ON asess.id = sa.academic_session_id
 `;
+/** the only columns update() will SET — exported so the service can guard an empty PATCH */
+export const ALLOWED_UPDATE_FIELDS = [
+  'teacher_id',
+  'class_id',
+  'section_id',
+  'subject_id',
+  'academic_session_id',
+  'assigned_by',
+] as const;
 
 export const subjectAssignmentRepository = {
   async create({
@@ -199,21 +210,14 @@ export const subjectAssignmentRepository = {
 
   async update(
     id: string,
-    {
-      teacher_id,
-      class_id,
-      section_id,
-      subject_id,
-      academic_session_id,
-    }: UpdateSubjectAssignmentData,
+    inputData: UpdateSubjectAssignmentData,
   ): Promise<SubjectAssignmentRow | null> {
     const setClauses: string[] = [];
     const params: unknown[] = [];
-    const fields = { teacher_id, class_id, section_id, subject_id, academic_session_id };
 
-    for (const [key, val] of Object.entries(fields)) {
-      if (val !== undefined) {
-        params.push(val);
+    for (const key of ALLOWED_UPDATE_FIELDS) {
+      if (inputData[key] !== undefined) {
+        params.push(inputData[key]);
         setClauses.push(`${key} = $${params.length}`);
       }
     }

@@ -21,6 +21,12 @@ export interface UpdateSectionData {
   max_capacity?: number | null;
 }
 
+/**
+ * the only columns update() will SET — exported so the service can guard an empty PATCH.
+ * update() below checks these one by one rather than looping; keep the two in step.
+ */
+export const ALLOWED_UPDATE_FIELDS = ['name', 'max_capacity'] as const;
+
 const SORTABLE_FIELDS: Record<string, string> = {
   name: 's.name',
   max_capacity: 's.max_capacity',
@@ -151,11 +157,11 @@ export const sectionRepository = {
        RETURNING *`,
       params,
     );
-// ex,
-// UPDATE sections 
-// SET name = $1, max_capacity = $2, updated_at = NOW()
-// WHERE id = $3 AND deleted_at IS NULL
-// RETURNING *
+    // ex,
+    // UPDATE sections
+    // SET name = $1, max_capacity = $2, updated_at = NOW()
+    // WHERE id = $3 AND deleted_at IS NULL
+    // RETURNING *
     return rows[0] || null;
   },
 

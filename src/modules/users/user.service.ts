@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import {
+  ALLOWED_UPDATE_FIELDS,
   userRepository,
   type UpdatedUserRow,
   type UpdateUserData,
@@ -9,7 +10,13 @@ import { roleRepository } from '../roles/role.repository.js';
 import { AppError } from '../../utils/appError.js';
 import { getPagination, buildMeta } from '../../utils/pagination.js';
 import { env } from '../../config/env.js';
-import { assertString, assertUuid, assertEnum, GENDERS } from '../../utils/validators.js';
+import {
+  assertString,
+  assertUuid,
+  assertEnum,
+  assertHasUpdates,
+  GENDERS,
+} from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { Gender, UserRow } from '../../types/db.types.js';
 
@@ -90,6 +97,8 @@ export const userService = {
       const role = await roleRepository.findById(fields.role_id);
       if (!role) throw new AppError('Role not found', 404);
     }
+
+    assertHasUpdates(fields, ALLOWED_UPDATE_FIELDS);
 
     const updated = await userRepository.update(id, fields);
     if (!updated) throw new AppError('User not found', 404);

@@ -35,8 +35,9 @@ export interface UpdateUserData {
   gender?: Gender;
 }
 
-/** Only these columns may be written by update(). */
-const ALLOWED_UPDATE_FIELDS = ['full_name', 'email', 'role_id', 'gender'] as const;
+/** Only these columns may be written by update() — none of them is NULL-able, so this
+ *  module has no null-clearing case. Exported so the service can reject an empty PATCH. */
+export const ALLOWED_UPDATE_FIELDS = ['full_name', 'email', 'role_id', 'gender'] as const;
 
 const SAFE_COLUMNS = `
   u.id, u.full_name, u.email, u.role_id, u.is_active,

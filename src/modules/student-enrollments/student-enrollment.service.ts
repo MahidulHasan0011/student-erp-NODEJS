@@ -1,4 +1,5 @@
 import {
+  ALLOWED_UPDATE_FIELDS,
   studentEnrollmentRepository,
   type EnrollmentDetailRow,
 } from './student-enrollment.repository.js';
@@ -8,7 +9,12 @@ import { sectionRepository } from '../sections/section.repository.js';
 import { academicSessionRepository } from '../academic-sessions/academic-session.repository.js';
 import { AppError } from '../../utils/appError.js';
 import { getPagination, buildMeta } from '../../utils/pagination.js';
-import { assertUuid, assertEnum, ENROLLMENT_TYPES } from '../../utils/validators.js';
+import {
+  assertUuid,
+  assertEnum,
+  assertHasUpdates,
+  ENROLLMENT_TYPES,
+} from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { EnrollmentType, StudentEnrollmentRow } from '../../types/db.types.js';
 
@@ -124,7 +130,9 @@ export const studentEnrollmentService = {
     const enrollment = await this.getById(id);
 
     class_id = assertUuid(class_id, 'class_id', { required: false });
-    section_id = assertUuid(section_id, 'section_id', { required: false });
+    // section_id is NULL-able (an enrollment need not be section-specific), so an explicit
+    // null clears it; class_id is not, so it stays non-nullable
+    section_id = assertUuid(section_id, 'section_id', { required: false, nullable: true });
 
     const targetClassId = class_id || enrollment.class_id;
 
@@ -145,7 +153,10 @@ export const studentEnrollmentService = {
       }
     }
 
-    const updated = await studentEnrollmentRepository.update(id, { class_id, section_id });
+    const patch = { class_id, section_id };
+    assertHasUpdates(patch, ALLOWED_UPDATE_FIELDS);
+
+    const updated = await studentEnrollmentRepository.update(id, patch);
     if (!updated) throw new AppError('Enrollment not found', 404);
     return updated;
   },

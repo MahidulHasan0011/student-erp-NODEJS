@@ -1,8 +1,17 @@
-import { sectionRepository, type SectionWithClassRow } from './section.repository.js';
+import {
+  ALLOWED_UPDATE_FIELDS,
+  sectionRepository,
+  type SectionWithClassRow,
+} from './section.repository.js';
 import { classRepository } from '../classes/class.repository.js';
 import { AppError } from '../../utils/appError.js';
 import { getPagination, buildMeta } from '../../utils/pagination.js';
-import { assertString, assertUuid, assertInteger } from '../../utils/validators.js';
+import {
+  assertString,
+  assertUuid,
+  assertInteger,
+  assertHasUpdates,
+} from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { SectionRow } from '../../types/db.types.js';
 
@@ -89,16 +98,25 @@ export const sectionService = {
     const section = await this.getById(id);
 
     name = assertString(name, 'name', { required: false, max: 20 })?.toUpperCase();
-    max_capacity = assertInteger(max_capacity, 'max_capacity', { required: false, min: 1 });
+    // max_capacity is NULL-able (NULL = unlimited), so an explicit null must clear it;
+    // `name` is NOT NULL, so it deliberately stays non-nullable
+    max_capacity = assertInteger(max_capacity, 'max_capacity', {
+      required: false,
+      nullable: true,
+      min: 1,
+    });
 
     if (name) {
-      const existing = await sectionRepository.findByClassAndName(section.class_id!, name);  //section.class_id! ,(!) called Non-Null Assertion Operator. I am 100% certain that the value of `class_id` here will never be `null` or `undefined`. You can trust me blindly—don't throw any Type Errors.
+      const existing = await sectionRepository.findByClassAndName(section.class_id!, name); //section.class_id! ,(!) called Non-Null Assertion Operator. I am 100% certain that the value of `class_id` here will never be `null` or `undefined`. You can trust me blindly—don't throw any Type Errors.
       if (existing && existing.id !== id) {
         throw new AppError(`Section "${name}" already exists in this class`, 409);
       }
     }
 
-    if (max_capacity !== undefined) {
+    // `!= null` on purpose, not `!== undefined`: clearing the cap means unlimited, so there is
+    // nothing to check. Comparing a null cap here would read as 0 and reject every section
+    // that already has students.
+    if (max_capacity != null) {
       // check when lowering capacity — cannot set it below the number of already enrolled students
       const enrolledCount = await sectionRepository.countEnrolledStudents(id);
       if (max_capacity < enrolledCount) {
@@ -109,10 +127,10 @@ export const sectionService = {
       }
     }
 
-    const updated = await sectionRepository.update(id, {
-      name,
-      max_capacity,
-    });
+    const patch = { name, max_capacity };
+    assertHasUpdates(patch, ALLOWED_UPDATE_FIELDS);
+
+    const updated = await sectionRepository.update(id, patch);
     if (!updated) throw new AppError('Section not found', 404);
     return updated;
   },

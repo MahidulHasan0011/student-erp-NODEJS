@@ -59,6 +59,14 @@ export interface UpdateTeacherData {
   joining_date?: string | null;
 }
 
+/** the only columns update() will SET — exported so the service can guard an empty PATCH */
+export const ALLOWED_UPDATE_FIELDS = [
+  'phone',
+  'designation',
+  'qualification',
+  'joining_date',
+] as const;
+
 const SAFE_COLUMNS = `
   t.id, t.user_id, t.phone, t.designation, t.qualification, t.joining_date,
   t.created_at, t.updated_at,
@@ -180,17 +188,13 @@ export const teacherRepository = {
     return rows;
   },
 
-  async update(
-    id: string,
-    { phone, designation, qualification, joining_date }: UpdateTeacherData,
-  ): Promise<TeacherRow | null> {
+  async update(id: string, inputData: UpdateTeacherData): Promise<TeacherRow | null> {
     const setClauses: string[] = [];
     const params: unknown[] = [];
-    const fields = { phone, designation, qualification, joining_date };
 
-    for (const [key, val] of Object.entries(fields)) {
-      if (val !== undefined) {
-        params.push(val);
+    for (const key of ALLOWED_UPDATE_FIELDS) {
+      if (inputData[key] !== undefined) {
+        params.push(inputData[key]);
         setClauses.push(`${key} = $${params.length}`);
       }
     }

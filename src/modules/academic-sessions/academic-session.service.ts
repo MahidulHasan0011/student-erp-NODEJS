@@ -1,4 +1,5 @@
 import {
+  ALLOWED_UPDATE_FIELDS,
   academicSessionRepository,
   type CreateAcademicSessionData,
   type UpdateAcademicSessionData,
@@ -11,6 +12,7 @@ import {
   assertDate,
   assertDateOrder,
   assertBoolean,
+  assertHasUpdates,
 } from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { AcademicSessionRow } from '../../types/db.types.js';
@@ -74,9 +76,16 @@ export const academicSessionService = {
       }
     }
 
-    assertDate(fields.start_date, 'start_date', { required: false });
-    assertDate(fields.end_date, 'end_date', { required: false });
+    // both columns are NULL-able — nullable:true keeps an explicit null as null so it clears
+    // the date, instead of collapsing to undefined and being skipped by the SET clause
+    fields.start_date = assertDate(fields.start_date, 'start_date', {
+      required: false,
+      nullable: true,
+    });
+    fields.end_date = assertDate(fields.end_date, 'end_date', { required: false, nullable: true });
     assertDateOrder(fields.start_date, fields.end_date);
+
+    assertHasUpdates(fields, ALLOWED_UPDATE_FIELDS);
 
     const updated = await academicSessionRepository.update(id, fields);
     if (!updated) throw new AppError('Academic session not found', 404);

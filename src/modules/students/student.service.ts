@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import type { PoolClient } from 'pg';
 import {
+  ALLOWED_UPDATE_FIELDS,
   studentRepository,
   type CurrentEnrollmentRow,
   type StudentListRow,
@@ -12,7 +13,13 @@ import { AppError } from '../../utils/appError.js';
 import { getPagination, buildMeta } from '../../utils/pagination.js';
 import { withTransaction } from '../../config/db.js';
 import { env } from '../../config/env.js';
-import { assertString, assertEnum, assertDate, GENDERS } from '../../utils/validators.js';
+import {
+  assertString,
+  assertEnum,
+  assertDate,
+  assertHasUpdates,
+  GENDERS,
+} from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { Gender, StudentRow } from '../../types/db.types.js';
 
@@ -136,16 +143,24 @@ export const studentService = {
   async update(id: string, fields: UpdateStudentInput): Promise<StudentRow> {
     await this.getById(id);
 
-    fields.date_of_birth = assertDate(fields.date_of_birth, 'date_of_birth', { required: false });
+    // every column here is NULL-able, so nullable:true lets an explicit null clear it
+    fields.date_of_birth = assertDate(fields.date_of_birth, 'date_of_birth', {
+      required: false,
+      nullable: true,
+    });
     fields.guardian_name = assertString(fields.guardian_name, 'guardian_name', {
       required: false,
+      nullable: true,
       max: 100,
     });
     fields.guardian_phone = assertString(fields.guardian_phone, 'guardian_phone', {
       required: false,
+      nullable: true,
       max: 20,
     });
-    fields.address = assertString(fields.address, 'address', { required: false });
+    fields.address = assertString(fields.address, 'address', { required: false, nullable: true });
+
+    assertHasUpdates(fields, ALLOWED_UPDATE_FIELDS);
 
     const updated = await studentRepository.update(id, fields);
     if (!updated) throw new AppError('Student not found', 404);

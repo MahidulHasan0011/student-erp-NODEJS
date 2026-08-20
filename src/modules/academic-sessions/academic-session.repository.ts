@@ -19,8 +19,9 @@ export interface UpdateAcademicSessionData {
 }
 
 /** Only these columns may be written by update() — is_active and admission_test_enabled
- *  have their own dedicated methods so the "one active session" rule stays enforceable. */
-const ALLOWED_UPDATE_FIELDS = ['name', 'start_date', 'end_date'] as const;
+ *  have their own dedicated methods so the "one active session" rule stays enforceable.
+ *  Exported so the service can reject an empty PATCH before it reaches the SET clause. */
+export const ALLOWED_UPDATE_FIELDS = ['name', 'start_date', 'end_date'] as const;
 
 const SORTABLE_FIELDS: Record<string, string> = {
   name: 'name',

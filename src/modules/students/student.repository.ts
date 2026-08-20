@@ -64,8 +64,9 @@ export interface UpdateStudentData {
   address?: string | null;
 }
 
-/** Only these columns may be written by update() — the allow-list is the SET clause. */
-const ALLOWED_UPDATE_FIELDS = [
+/** Only these columns may be written by update() — the allow-list is the SET clause.
+ *  Exported so the service can reject an empty PATCH before it reaches that clause. */
+export const ALLOWED_UPDATE_FIELDS = [
   'date_of_birth',
   'guardian_name',
   'guardian_phone',

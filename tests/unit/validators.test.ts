@@ -9,6 +9,7 @@ import {
   assertDateOrder,
   assertEnum,
   assertArray,
+  assertHasUpdates,
   GENDERS,
 } from '../../src/utils/validators.js';
 import { AppError } from '../../src/utils/appError.js';
@@ -119,6 +120,86 @@ describe('validators', () => {
     });
     it('throws on an empty array (min 1)', () => {
       expect(() => assertArray([], 'ids')).toThrowError(/at least 1/);
+    });
+  });
+
+  // `nullable` is what makes a PATCH able to clear a NULL-able column: the repositories skip
+  // undefined fields, so a null has to survive validation as null to reach the SET clause.
+  describe('nullable', () => {
+    it('keeps an explicit null as null instead of undefined', () => {
+      expect(assertString(null, 'phone', { required: false, nullable: true })).toBeNull();
+      expect(assertDate(null, 'joining_date', { required: false, nullable: true })).toBeNull();
+      expect(assertUuid(null, 'section_id', { required: false, nullable: true })).toBeNull();
+      expect(assertInteger(null, 'max_capacity', { required: false, nullable: true })).toBeNull();
+      expect(assertNumber(null, 'marks', { required: false, nullable: true })).toBeNull();
+      expect(assertBoolean(null, 'flag', { required: false, nullable: true })).toBeNull();
+      expect(assertEnum(null, 'gender', GENDERS, { required: false, nullable: true })).toBeNull();
+    });
+    it('still collapses null to undefined without the flag (the old default)', () => {
+      expect(assertString(null, 'phone', { required: false })).toBeUndefined();
+      expect(assertUuid(null, 'section_id', { required: false })).toBeUndefined();
+    });
+    it('nullable does not excuse an absent value when required', () => {
+      expect(() => assertString(undefined, 'phone', { nullable: true })).toThrowError(/required/);
+    });
+    it('accepts null even when required — the key was present', () => {
+      expect(assertString(null, 'phone', { nullable: true })).toBeNull();
+    });
+    it('still validates a non-null value', () => {
+      expect(assertString('  x ', 'phone', { required: false, nullable: true })).toBe('x');
+      expect(() => assertUuid('nope', 'id', { required: false, nullable: true })).toThrowError(
+        /valid id/,
+      );
+    });
+    // "" is deliberately NOT a clear signal — a blank input is more often an accident
+    it('does not treat an empty string as a clear', () => {
+      expect(assertString('', 'phone', { required: false, nullable: true })).toBeUndefined();
+    });
+  });
+
+  // stands in for a repository's Update*Data DTO + its exported ALLOWED_UPDATE_FIELDS.
+  // The `allowed` names must all be keys of the patch type — that constraint is what keeps
+  // a repository's allow-list from drifting away from the interface it updates.
+  describe('assertHasUpdates', () => {
+    interface Patch {
+      phone?: string | null;
+      designation?: string;
+    }
+    const ALLOWED = ['phone', 'designation'] as const;
+
+    it('passes when at least one allowed field is present', () => {
+      const patch: Patch = { phone: '01711' };
+      expect(() => assertHasUpdates(patch, ALLOWED)).not.toThrow();
+    });
+    it('throws on an empty body', () => {
+      const patch: Patch = {};
+      expect(() => assertHasUpdates(patch, ALLOWED)).toThrowError(/No fields to update/);
+    });
+    it('throws when every allowed field is undefined', () => {
+      const patch: Patch = { phone: undefined, designation: undefined };
+      expect(() => assertHasUpdates(patch, ALLOWED)).toThrowError(/No fields to update/);
+    });
+    // the misleading-404 case: keys the repository would never SET must not satisfy the guard
+    it('ignores keys outside the allow-list', () => {
+      const patch = { nonsense: 1 } as unknown as Patch;
+      expect(() => assertHasUpdates(patch, ALLOWED)).toThrowError(/No fields to update/);
+    });
+    it('throws 400, and names the allowed fields', () => {
+      const patch: Patch = {};
+      try {
+        assertHasUpdates(patch, ALLOWED);
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(AppError);
+        expect((err as AppError).statusCode).toBe(400);
+        expect((err as AppError).message).toContain('phone, designation');
+      }
+    });
+    // null counts — the caller did send it, and on a nullable column it clears the value.
+    // A non-nullable field never reaches here as null: validation maps it to undefined first.
+    it('treats an explicit null as a field to update', () => {
+      const patch: Patch = { phone: null };
+      expect(() => assertHasUpdates(patch, ALLOWED)).not.toThrow();
     });
   });
 });

@@ -1,4 +1,5 @@
 import {
+  ALLOWED_UPDATE_FIELDS,
   subjectAssignmentRepository,
   type CreateSubjectAssignmentData,
   type SubjectAssignmentDetailRow,
@@ -15,16 +16,13 @@ import { academicSessionRepository } from '../academic-sessions/academic-session
 // case-insensitive, and would have failed to resolve on a Linux deploy.
 import { AppError } from '../../utils/appError.js';
 import { getPagination, buildMeta } from '../../utils/pagination.js';
-import { assertUuid } from '../../utils/validators.js';
+import { assertUuid, assertHasUpdates } from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { SubjectAssignmentRow } from '../../types/db.types.js';
 
 export type CreateSubjectAssignmentInput = CreateSubjectAssignmentData;
 
-export interface UpdateSubjectAssignmentInput extends UpdateSubjectAssignmentData {
-  /** validated but not written — update() does not touch assigned_by */
-  assigned_by?: string | null;
-}
+export type UpdateSubjectAssignmentInput = UpdateSubjectAssignmentData;
 
 /** create() reports how many other teachers already hold the same slot (informational). */
 export interface CreatedSubjectAssignment extends SubjectAssignmentRow {
@@ -147,8 +145,12 @@ export const subjectAssignmentService = {
     if (fields.class_id !== undefined) {
       fields.class_id = assertUuid(fields.class_id, 'class_id');
     }
-    if (fields.section_id !== undefined && fields.section_id !== null) {
-      fields.section_id = assertUuid(fields.section_id, 'section_id');
+    // section_id and assigned_by are NULL-able — nullable:true states that outright, rather
+    // than leaving null to survive only because the guard skipped validation entirely.
+    // The `!== undefined` guards stay: writing undefined back would wipe the assignment's
+    // real value in the `merged` spread below and break the duplicate check.
+    if (fields.section_id !== undefined) {
+      fields.section_id = assertUuid(fields.section_id, 'section_id', { nullable: true });
     }
     if (fields.subject_id !== undefined) {
       fields.subject_id = assertUuid(fields.subject_id, 'subject_id');
@@ -156,9 +158,13 @@ export const subjectAssignmentService = {
     if (fields.academic_session_id !== undefined) {
       fields.academic_session_id = assertUuid(fields.academic_session_id, 'academic_session_id');
     }
-    if (fields.assigned_by !== undefined && fields.assigned_by !== null) {
-      fields.assigned_by = assertUuid(fields.assigned_by, 'assigned_by');
+    if (fields.assigned_by !== undefined) {
+      fields.assigned_by = assertUuid(fields.assigned_by, 'assigned_by', { nullable: true });
     }
+
+    // before the duplicate check below — a body with nothing to SET would otherwise
+    // re-read the row's own combination, match itself, and fall through to a 404
+    assertHasUpdates(fields, ALLOWED_UPDATE_FIELDS);
 
     if (fields.teacher_id) {
       const teacher = await teacherRepository.findById(fields.teacher_id);

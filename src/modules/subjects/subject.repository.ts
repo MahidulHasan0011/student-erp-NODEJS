@@ -15,6 +15,12 @@ export interface UpdateSubjectData {
   code?: string | null;
 }
 
+/**
+ * the only columns update() will SET — exported so the service can guard an empty PATCH.
+ * update() below checks these one by one rather than looping; keep the two in step.
+ */
+export const ALLOWED_UPDATE_FIELDS = ['name', 'code'] as const;
+
 const SORTABLE_FIELDS: Record<string, string> = {
   name: 'name',
   code: 'code',

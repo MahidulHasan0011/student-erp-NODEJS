@@ -55,7 +55,10 @@ export const subjectAssignmentController: SubjectAssignmentController = {
 
   async update(req, res, next) {
     try {
-      const data = await subjectAssignmentService.update(req.params.id, req.body);
+      const data = await subjectAssignmentService.update(req.params.id, {
+        ...req.body,
+        assigned_by: requireUser(req).userId, // logged-in admin who made this change — kept as a log
+      });
       return successResponse(res, { message: 'Subject assignment updated', data });
     } catch (err) {
       next(err);

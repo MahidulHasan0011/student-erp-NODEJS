@@ -26,8 +26,9 @@ export interface UpdateExamData {
   exam_type?: ExamType;
 }
 
-/** Only these columns may be written by update() — status has its own setStatus(). */
-const ALLOWED_UPDATE_FIELDS = [
+/** Only these columns may be written by update() — status has its own setStatus().
+ *  Exported so the service can reject an empty PATCH before it reaches the SET clause. */
+export const ALLOWED_UPDATE_FIELDS = [
   'name',
   'class_id',
   'academic_session_id',

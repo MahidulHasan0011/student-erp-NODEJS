@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import {
+  ALLOWED_UPDATE_FIELDS,
   teacherRepository,
   type TeacherAssignmentRow,
   type TeacherListRow,
@@ -11,7 +12,13 @@ import { AppError } from '../../utils/appError.js';
 import { getPagination, buildMeta } from '../../utils/pagination.js';
 import { withTransaction } from '../../config/db.js';
 import { env } from '../../config/env.js';
-import { assertString, assertEnum, assertDate, GENDERS } from '../../utils/validators.js';
+import {
+  assertString,
+  assertEnum,
+  assertDate,
+  assertHasUpdates,
+  GENDERS,
+} from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { Gender, TeacherRow } from '../../types/db.types.js';
 
@@ -118,13 +125,27 @@ export const teacherService = {
   async update(id: string, fields: UpdateTeacherInput): Promise<TeacherRow> {
     await this.getById(id);
 
-    fields.phone = assertString(fields.phone, 'phone', { required: false, max: 20 });
+    // every column here is NULL-able, so nullable:true lets an explicit null clear it
+    fields.phone = assertString(fields.phone, 'phone', {
+      required: false,
+      nullable: true,
+      max: 20,
+    });
     fields.designation = assertString(fields.designation, 'designation', {
       required: false,
+      nullable: true,
       max: 100,
     });
-    fields.qualification = assertString(fields.qualification, 'qualification', { required: false });
-    fields.joining_date = assertDate(fields.joining_date, 'joining_date', { required: false });
+    fields.qualification = assertString(fields.qualification, 'qualification', {
+      required: false,
+      nullable: true,
+    });
+    fields.joining_date = assertDate(fields.joining_date, 'joining_date', {
+      required: false,
+      nullable: true,
+    });
+
+    assertHasUpdates(fields, ALLOWED_UPDATE_FIELDS);
 
     const updated = await teacherRepository.update(id, fields);
     if (!updated) throw new AppError('Teacher not found', 404);

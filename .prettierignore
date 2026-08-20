@@ -7,3 +7,5 @@ package-lock.json
 # hand-written Bangla docs — prettier escapes ** as \**, drops the deliberate blank
 # lines and reflows the aligned plain-text tables onto one line
 src/docs/
+# same, for the per-module notes that live next to the code they describe
+src/modules/**/*.md

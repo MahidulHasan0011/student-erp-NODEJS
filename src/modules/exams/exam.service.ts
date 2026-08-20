@@ -1,4 +1,5 @@
 import {
+  ALLOWED_UPDATE_FIELDS,
   examRepository,
   type CreateExamData,
   type ExamWithNamesRow,
@@ -14,6 +15,7 @@ import {
   assertUuid,
   assertDate,
   assertEnum,
+  assertHasUpdates,
   EXAM_TYPES,
 } from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
@@ -78,20 +80,31 @@ export const examService = {
     if (fields.name !== undefined) {
       fields.name = assertString(fields.name, 'name', { max: 100 });
     }
+    // class_id / academic_session_id / exam_date are all NULL-able — nullable:true lets an
+    // explicit null clear them rather than collapsing to undefined and being skipped
     if (fields.class_id !== undefined) {
-      fields.class_id = assertUuid(fields.class_id, 'class_id', { required: false });
+      fields.class_id = assertUuid(fields.class_id, 'class_id', {
+        required: false,
+        nullable: true,
+      });
     }
     if (fields.academic_session_id !== undefined) {
       fields.academic_session_id = assertUuid(fields.academic_session_id, 'academic_session_id', {
         required: false,
+        nullable: true,
       });
     }
     if (fields.exam_date !== undefined) {
-      fields.exam_date = assertDate(fields.exam_date, 'exam_date', { required: false });
+      fields.exam_date = assertDate(fields.exam_date, 'exam_date', {
+        required: false,
+        nullable: true,
+      });
     }
     if (fields.exam_type !== undefined) {
       fields.exam_type = assertEnum(fields.exam_type, 'exam_type', EXAM_TYPES, { required: false });
     }
+
+    assertHasUpdates(fields, ALLOWED_UPDATE_FIELDS);
 
     const updated = await examRepository.update(id, fields);
     if (!updated) throw new AppError('Exam not found', 404);

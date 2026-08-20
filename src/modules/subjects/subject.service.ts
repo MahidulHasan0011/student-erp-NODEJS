@@ -1,7 +1,7 @@
-import { subjectRepository } from './subject.repository.js';
+import { ALLOWED_UPDATE_FIELDS, subjectRepository } from './subject.repository.js';
 import { AppError } from '../../utils/appError.js';
 import { getPagination, buildMeta } from '../../utils/pagination.js';
-import { assertString } from '../../utils/validators.js';
+import { assertString, assertHasUpdates } from '../../utils/validators.js';
 import type { ListQuery, Paginated } from '../../types/common.types.js';
 import type { SubjectRow } from '../../types/db.types.js';
 
@@ -53,7 +53,10 @@ export const subjectService = {
     await this.getById(id);
 
     name = assertString(name, 'name', { required: false, max: 100 });
-    code = assertString(code, 'code', { required: false, max: 20 })?.toUpperCase();
+    // code is NULL-able, name is NOT NULL. The uppercase step is a separate statement because
+    // `?.toUpperCase()` would turn an explicit null back into undefined and lose the clear.
+    code = assertString(code, 'code', { required: false, nullable: true, max: 20 });
+    if (code) code = code.toUpperCase();
 
     if (name) {
       const existing = await subjectRepository.findByName(name);
@@ -66,10 +69,10 @@ export const subjectService = {
         throw new AppError(`Subject code "${code}" already exists`, 409);
     }
 
-    const updated = await subjectRepository.update(id, {
-      name,
-      code,
-    });
+    const patch = { name, code };
+    assertHasUpdates(patch, ALLOWED_UPDATE_FIELDS);
+
+    const updated = await subjectRepository.update(id, patch);
     if (!updated) throw new AppError('Subject not found', 404);
     return updated;
   },

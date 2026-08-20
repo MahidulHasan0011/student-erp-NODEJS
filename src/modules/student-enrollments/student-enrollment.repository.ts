@@ -26,8 +26,9 @@ export interface UpdateEnrollmentData {
   section_id?: string | null;
 }
 
-/** roll_number is intentionally absent — only the ranking/roll engine writes it. */
-const ALLOWED_UPDATE_FIELDS = ['class_id', 'section_id'] as const;
+/** roll_number is intentionally absent — only the ranking/roll engine writes it.
+ *  Exported so the service can reject an empty PATCH before it reaches the SET clause. */
+export const ALLOWED_UPDATE_FIELDS = ['class_id', 'section_id'] as const;
 
 const SORTABLE_FIELDS: Record<string, string> = {
   roll_number: 'se.roll_number',
